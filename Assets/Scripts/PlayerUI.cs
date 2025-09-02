@@ -50,10 +50,10 @@ public class PlayerUI : MonoBehaviour
         if(GameManager.Instance.GetCurrentPlayablePlayerType() == GameManager.PlayerType.Cross)
         {
             crossArrowGameObject.SetActive(true);
-            crossArrowGameObject.SetActive(false);
+            circleArrowGameObject.SetActive(false);
         } else {
             crossArrowGameObject.SetActive(false);
-            crossArrowGameObject.SetActive(true);
+            circleArrowGameObject.SetActive(true);
         }
     }
 }
