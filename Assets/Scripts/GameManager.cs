@@ -26,6 +26,8 @@ public class GameManager : NetworkBehaviour
         public PlayerType winPlayerType;
     }
     public event EventHandler OnCurrentPlayablePlayerTypeChanged;
+    public event EventHandler OnRematch;
+    public event EventHandler OnGameTied;
 
     public enum PlayerType {
         None,
@@ -216,10 +218,39 @@ public class GameManager : NetworkBehaviour
                 Debug.Log("Winner");
                 currentPlayablePlayerType.Value = PlayerType.None;
                 TriggerOnGameWinRpc(i, playerTypeArray[line.centerGridPosition.x, line.centerGridPosition.y]);
-                break;
+                return;
             }
         }
+
+        bool hasTie = true;
+
+        for (int i = 0; i < playerTypeArray.GetLength(0); i++) {
+            for (int j = 0; j < playerTypeArray.GetLength(1); j++) {
+                if (playerTypeArray[i,j] == PlayerType.None) 
+                {
+                    // meaning block is full and no winner yet
+                    hasTie = false;
+                    break;
+                }
+            }
+        }
+
+        if(hasTie)
+        {
+            // its a tie
+
+            TriggerOnGameTiedRpc();
+        }
+
+
     }
+    [Rpc(SendTo.ClientsAndHost)]
+    private void TriggerOnGameTiedRpc()
+    {
+        OnGameTied?.Invoke(this, EventArgs.Empty);
+    }
+
+
 
     [Rpc(SendTo.ClientsAndHost)]
     private void TriggerOnGameWinRpc(int lineIndex, PlayerType winPlayerType) {
@@ -228,6 +259,28 @@ public class GameManager : NetworkBehaviour
             line = line,
             winPlayerType = winPlayerType,
         });
+    }
+
+
+    [Rpc(SendTo.Server)]
+    public void RematchRpc()
+    {
+        for (int i = 0; i < playerTypeArray.GetLength(0); i++)
+        {
+            for (int j = 0; j < playerTypeArray.GetLength(1); j++)
+            {
+                playerTypeArray[i,j] = PlayerType.None;
+            }
+        }
+        currentPlayablePlayerType.Value = PlayerType.Cross;
+        OnRematch?.Invoke(this, EventArgs.Empty);
+        TriggerOnRematchRpc();
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void TriggerOnRematchRpc()
+    {
+        OnRematch?.Invoke(this, EventArgs.Empty);
     }
 
     public PlayerType GetLocalPlayerType()

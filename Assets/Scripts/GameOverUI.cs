@@ -1,14 +1,45 @@
+using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameOverUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI resultTextMesh;
     [SerializeField] private Color winColor;
     [SerializeField] private Color loseColor;
+    [SerializeField] private Color tieColor;
+    [SerializeField] private Button rematchButton;
+
+
+    private void Awake()
+    {
+        rematchButton.onClick.AddListener(() =>
+        {
+            GameManager.Instance.RematchRpc();
+        });
+    }
 
     private void Start() {
         GameManager.Instance.OnGameWin += GameManager_OnGameWin;
+        GameManager.Instance.OnRematch += GameManager_OnRematch;
+        GameManager.Instance.OnGameTied += GameManager_OnGameTied;
+
+
+        Hide();
+    }
+
+    private void GameManager_OnGameTied(object sender, EventArgs e)
+    {
+        resultTextMesh.text = "TIED!";
+        resultTextMesh.color = tieColor;
+
+        Show();
+
+    }
+
+    private void GameManager_OnRematch(object sender, System.EventArgs e)
+    {
         Hide();
     }
 
